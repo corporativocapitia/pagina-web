@@ -36,22 +36,28 @@ body{
   overflow-x:hidden;
 }
 
-/* === Background con profundidad (no plano) === */
+/* === Background con profundidad rica (no plano) === */
+body{
+  background:
+    radial-gradient(800px 600px at 92% -8%,rgba(61,90,85,0.34),transparent 60%),
+    radial-gradient(700px 500px at -8% 108%,rgba(8,57,51,0.26),transparent 65%),
+    radial-gradient(900px 500px at 50% 40%,rgba(255,255,255,0.55),transparent 78%),
+    linear-gradient(165deg,#EDEFE9 0%,#F5F6F4 42%,#E5EAE5 100%);
+}
 body::before{
   content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:
-    radial-gradient(60vmax 45vmax at 110% -10%,rgba(61,90,85,0.22),transparent 60%),
-    radial-gradient(55vmax 40vmax at -10% 110%,rgba(8,57,51,0.16),transparent 65%),
-    linear-gradient(180deg,#F5F6F4 0%,#EFF1ED 100%);
+  background-image:
+    linear-gradient(rgba(8,57,51,0.07) 1px,transparent 1px),
+    linear-gradient(to right,rgba(8,57,51,0.07) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 80% 70% at center,black 20%,transparent 78%);
+  -webkit-mask-image:radial-gradient(ellipse 80% 70% at center,black 20%,transparent 78%);
 }
 body::after{
-  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-image:
-    linear-gradient(rgba(8,57,51,0.045) 1px,transparent 1px),
-    linear-gradient(to right,rgba(8,57,51,0.045) 1px,transparent 1px);
-  background-size:54px 54px;
-  mask-image:radial-gradient(ellipse at center,black 25%,transparent 75%);
-  -webkit-mask-image:radial-gradient(ellipse at center,black 25%,transparent 75%);
+  content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.6' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:0.06;
+  mix-blend-mode:multiply;
 }
 .blob{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0;opacity:0.55}
 .blob.b1{width:560px;height:560px;background:radial-gradient(circle,rgba(61,90,85,0.50),transparent 70%);top:-180px;right:-140px;animation:driftA 32s ease-in-out infinite}
