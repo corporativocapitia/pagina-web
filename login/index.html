@@ -127,6 +127,21 @@
     .auth-left{padding:32px 24px}
   }
   @media(prefers-reduced-motion:reduce){.aura,.kpi{animation:none}}
+
+  /* ===== Login: error inline + selector de dashboards ===== */
+  .login-error{font-size:13px;color:#c0392b;background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.22);padding:10px 12px;border-radius:10px;margin-top:-4px}
+  .login-selector{margin-top:8px}
+  .login-selector-hint{font-size:14px;color:rgba(21,22,44,.65);margin:0 0 18px;line-height:1.5}
+  .login-cards{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+  .login-card{position:relative;display:block;padding:16px 44px 16px 18px;background:#fff;border:1px solid rgba(21,22,44,.12);border-radius:14px;text-decoration:none;color:inherit;transition:border-color .2s,background .2s,transform .2s,box-shadow .2s;font-family:inherit}
+  .login-card:hover{border-color:#0F222A;background:rgba(15,34,42,.03);transform:translateY(-1px);box-shadow:0 8px 24px rgba(15,34,42,.10)}
+  .login-card-title{font-size:15px;font-weight:600;letter-spacing:-.01em}
+  .login-card-sub{font-size:13px;color:#4D6E69;margin-top:2px}
+  .login-card-role{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:rgba(21,22,44,.55);margin-top:6px}
+  .login-card-arrow{position:absolute;top:50%;right:18px;transform:translateY(-50%);font-size:18px;color:rgba(21,22,44,.5);transition:transform .2s,color .2s}
+  .login-card:hover .login-card-arrow{color:#0F222A;transform:translateY(-50%) translateX(3px)}
+  .login-back{background:none;border:0;font:inherit;font-size:13px;color:rgba(21,22,44,.6);padding:8px 0;cursor:pointer;text-align:left}
+  .login-back:hover{color:#0F222A}
 </style>
 </head>
 <body>
@@ -138,20 +153,28 @@
       <h1>Inicia sesión</h1>
       <p class="lede">Accede al dashboard de tu empresa.</p>
 
-      <form class="form" onsubmit="return false">
+      <form class="form" id="loginForm">
         <label class="field">
           <span class="field-label">Correo electrónico o usuario</span>
-          <input type="text" name="login" autocomplete="username" placeholder="tucorreo@empresa.com o usuario" required>
+          <input type="text" id="loginInput" name="login" autocomplete="username" placeholder="tucorreo@empresa.com o usuario" required>
         </label>
         <label class="field">
           <span class="field-label">Contraseña</span>
-          <input type="password" name="password" autocomplete="current-password" placeholder="••••••••" required>
+          <input type="password" id="loginPassword" name="password" autocomplete="current-password" placeholder="••••••••" required>
         </label>
-        <button type="submit" class="btn-primary">Iniciar sesión <span class="arrow">→</span></button>
+        <div class="login-error" id="loginError" style="display:none" role="alert"></div>
+        <button type="submit" class="btn-primary" id="loginSubmit">Iniciar sesión <span class="arrow">→</span></button>
       </form>
 
-      <a class="muted-link" href="/#contacto">¿No puedes acceder a tu cuenta?</a>
-      <p class="foot">¿Tu empresa aún no está en Capitia? <a href="/#contacto">Hablemos</a></p>
+      <!-- Selector de dashboards (visible solo si tiene varios) -->
+      <div class="login-selector" id="loginSelector" style="display:none" aria-live="polite">
+        <p class="login-selector-hint">Tienes acceso a varios dashboards. ¿Cuál abres?</p>
+        <div class="login-cards" id="loginCards"></div>
+        <button type="button" class="login-back" id="loginBack">← Usar otra cuenta</button>
+      </div>
+
+      <a class="muted-link" href="/#contacto" id="loginHelp">¿No puedes acceder a tu cuenta?</a>
+      <p class="foot" id="loginFoot">¿Tu empresa aún no está en Capitia? <a href="/#contacto">Hablemos</a></p>
     </div>
     <p class="legal">© 2026 Capitia · Certeza financiera para tu empresa.</p>
   </section>
@@ -210,5 +233,112 @@
     </div>
   </aside>
 </main>
+<script>
+(function () {
+  var AUTH_BASE = 'https://dashboard-capitia.vercel.app';
+
+  var form = document.getElementById('loginForm');
+  var input = document.getElementById('loginInput');
+  var pass = document.getElementById('loginPassword');
+  var submit = document.getElementById('loginSubmit');
+  var errBox = document.getElementById('loginError');
+  var selector = document.getElementById('loginSelector');
+  var cards = document.getElementById('loginCards');
+  var back = document.getElementById('loginBack');
+  var help = document.getElementById('loginHelp');
+  var foot = document.getElementById('loginFoot');
+
+  function showError(msg) {
+    errBox.textContent = msg;
+    errBox.style.display = 'block';
+  }
+  function clearError() {
+    errBox.textContent = '';
+    errBox.style.display = 'none';
+  }
+  function exchangeUrl(token, opt) {
+    var qs = 'token=' + encodeURIComponent(token) + '&slug=' + encodeURIComponent(opt.slug);
+    if (opt.linkPath) qs += '&linkPath=' + encodeURIComponent(opt.linkPath);
+    return AUTH_BASE + '/api/dashboard-auth/exchange?' + qs;
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  }
+  function renderCards(list, token) {
+    cards.innerHTML = list.map(function (d) {
+      var sub = d.linkLabel ? '<div class="login-card-sub">' + escapeHtml(d.linkLabel) + '</div>' : '';
+      return (
+        '<a class="login-card" href="' + exchangeUrl(token, d) + '">'
+        + '<div class="login-card-title">' + escapeHtml(d.clientName) + '</div>'
+        + sub
+        + '<div class="login-card-role">' + escapeHtml(d.role) + '</div>'
+        + '<span class="login-card-arrow">→</span>'
+        + '</a>'
+      );
+    }).join('');
+  }
+  function showSelector(list, token) {
+    form.style.display = 'none';
+    help.style.display = 'none';
+    foot.style.display = 'none';
+    renderCards(list, token);
+    selector.style.display = 'block';
+  }
+  function showForm() {
+    selector.style.display = 'none';
+    form.style.display = 'block';
+    help.style.display = '';
+    foot.style.display = '';
+    cards.innerHTML = '';
+    clearError();
+  }
+
+  back.addEventListener('click', showForm);
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    clearError();
+    var userInput = input.value.trim();
+    var password = pass.value;
+    if (!userInput || !password) {
+      showError('Correo/usuario y contraseña requeridos');
+      return;
+    }
+    submit.disabled = true;
+    var originalText = submit.innerHTML;
+    submit.innerHTML = 'Entrando…';
+    try {
+      var r = await fetch(AUTH_BASE + '/api/dashboard-auth/unified-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userInput: userInput, password: password }),
+      });
+      var j = await r.json();
+      if (!r.ok || !j.ok) {
+        showError(j.error || 'No se pudo iniciar sesión');
+        submit.disabled = false;
+        submit.innerHTML = originalText;
+        return;
+      }
+      var list = j.dashboards || [];
+      var token = j.exchangeToken;
+      if (list.length === 1) {
+        // Skip selector: redirect directo al único dashboard disponible.
+        window.location.href = exchangeUrl(token, list[0]);
+        return;
+      }
+      showSelector(list, token);
+      submit.disabled = false;
+      submit.innerHTML = originalText;
+    } catch (err) {
+      showError('Error de red. Inténtalo de nuevo.');
+      submit.disabled = false;
+      submit.innerHTML = originalText;
+    }
+  });
+})();
+</script>
 </body>
 </html>
