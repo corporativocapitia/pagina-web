@@ -143,25 +143,19 @@
   .login-back{background:none;border:0;font:inherit;font-size:13px;color:rgba(21,22,44,.6);padding:8px 0;cursor:pointer;text-align:left}
   .login-back:hover{color:#0F222A}
 
-  /* ===== Splash de transición al dashboard ===== */
-  .login-splash{position:fixed;inset:0;background:radial-gradient(1200px 800px at 30% 20%,#1a3530 0%,transparent 60%),linear-gradient(135deg,#0F222A 0%,#0e2b27 55%,#083933 100%);color:#E0EAE6;z-index:9999;display:none;align-items:center;justify-content:center;padding:24px;text-align:center;font-family:inherit;overflow:hidden}
-  .login-splash.show{display:flex;animation:splashFadeIn .25s ease-out}
+  /* ===== Splash de transición al dashboard (estilo capitia.mx: minimal ink dark) ===== */
+  .login-splash{position:fixed;inset:0;background:#0f1225;color:#f1ede4;z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:24px;text-align:center;font-family:inherit;overflow:hidden;-webkit-font-smoothing:antialiased}
+  .login-splash.show{display:flex;animation:splashFadeIn .3s ease-out}
   @keyframes splashFadeIn{from{opacity:0}to{opacity:1}}
-  .login-splash::before{content:"";position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(77,110,105,.55) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);filter:blur(80px);animation:splashPulse 3s ease-in-out infinite;pointer-events:none}
-  .login-splash::after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(201,166,119,.28) 0%,transparent 70%);top:40%;right:15%;filter:blur(60px);animation:splashPulse 4s ease-in-out infinite reverse;pointer-events:none}
-  @keyframes splashPulse{0%,100%{opacity:.65;transform:translate(-50%,-50%) scale(1)}50%{opacity:.9;transform:translate(-50%,-50%) scale(1.08)}}
-  .login-splash-inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:14px;max-width:520px}
-  .login-splash-eyebrow{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:rgba(224,234,230,.55);font-weight:600;margin:0 0 6px}
-  .login-splash-mark{font-family:'Cormorant Garamond','Cormorant',Georgia,serif;font-size:clamp(56px,7vw,88px);font-weight:500;letter-spacing:-.03em;line-height:1;margin:0;background:linear-gradient(180deg,#f1ede4 0%,#c9a677 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
-  .login-splash-title{font-size:clamp(18px,1.7vw,22px);font-weight:400;color:rgba(224,234,230,.85);margin:8px 0 0;letter-spacing:-.005em;line-height:1.4}
-  .login-splash-target{font-family:'Cormorant Garamond','Cormorant',Georgia,serif;font-style:italic;font-weight:500;color:#c9a677;font-size:1.15em}
-  .login-splash-dots{display:inline-flex;gap:4px;margin-left:6px;vertical-align:middle}
-  .login-splash-dots span{width:5px;height:5px;border-radius:50%;background:#c9a677;opacity:.4;animation:splashDot 1.4s ease-in-out infinite}
-  .login-splash-dots span:nth-child(2){animation-delay:.2s}
-  .login-splash-dots span:nth-child(3){animation-delay:.4s}
-  @keyframes splashDot{0%,80%,100%{opacity:.3;transform:scale(.85)}40%{opacity:1;transform:scale(1)}}
-  .login-splash-tag{margin-top:32px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(224,234,230,.35);font-weight:500}
-  @media(prefers-reduced-motion:reduce){.login-splash::before,.login-splash::after,.login-splash-dots span{animation:none}}
+  .login-splash-ring{width:54px;height:54px;animation:splashSpin 1.2s linear infinite}
+  .login-splash-ring circle{fill:none;stroke-width:1.6;stroke-linecap:round}
+  .login-splash-ring .track{stroke:rgba(241,237,228,.12)}
+  .login-splash-ring .arc{stroke:#f1ede4;stroke-dasharray:150;stroke-dashoffset:105;transform-origin:center;animation:splashArc 2.4s ease-in-out infinite}
+  @keyframes splashSpin{to{transform:rotate(360deg)}}
+  @keyframes splashArc{0%{stroke-dashoffset:140;transform:rotate(0deg)}50%{stroke-dashoffset:35;transform:rotate(45deg)}100%{stroke-dashoffset:140;transform:rotate(360deg)}}
+  .login-splash-text{font-size:15px;font-weight:400;letter-spacing:.005em;color:rgba(241,237,228,.7);margin:0;line-height:1.5}
+  .login-splash-target{font-family:'Cormorant Garamond','Cormorant',Georgia,serif;font-style:italic;font-weight:400;color:#f1ede4;font-size:1.35em;letter-spacing:-.005em}
+  @media(prefers-reduced-motion:reduce){.login-splash-ring,.login-splash-ring .arc{animation:none}}
 </style>
 </head>
 <body>
@@ -254,17 +248,13 @@
   </aside>
 </main>
 
-<!-- Splash de transición al dashboard destino -->
-<div class="login-splash" id="loginSplash" aria-hidden="true">
-  <div class="login-splash-inner">
-    <p class="login-splash-eyebrow">Bienvenido</p>
-    <h1 class="login-splash-mark">Capitia</h1>
-    <p class="login-splash-title">
-      Abriendo <span class="login-splash-target" id="loginSplashTarget">tu dashboard</span>
-      <span class="login-splash-dots" aria-hidden="true"><span></span><span></span><span></span></span>
-    </p>
-    <p class="login-splash-tag">Certeza para tu operación</p>
-  </div>
+<!-- Splash de transición al dashboard destino (estilo capitia.mx: minimal ink dark) -->
+<div class="login-splash" id="loginSplash" role="status" aria-live="polite">
+  <svg class="login-splash-ring" viewBox="0 0 60 60" aria-hidden="true">
+    <circle class="track" cx="30" cy="30" r="26"/>
+    <circle class="arc" cx="30" cy="30" r="26"/>
+  </svg>
+  <p class="login-splash-text">Abriendo <em class="login-splash-target" id="loginSplashTarget">tu dashboard</em></p>
 </div>
 
 <script>
