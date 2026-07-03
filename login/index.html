@@ -142,6 +142,16 @@
   .login-card:hover .login-card-arrow{color:#0F222A;transform:translateY(-50%) translateX(3px)}
   .login-back{background:none;border:0;font:inherit;font-size:13px;color:rgba(21,22,44,.6);padding:8px 0;cursor:pointer;text-align:left}
   .login-back:hover{color:#0F222A}
+
+  /* ===== Splash de transición al dashboard ===== */
+  .login-splash{position:fixed;inset:0;background:linear-gradient(135deg,#0F222A 0%,#0e2b27 50%,#083933 100%);color:#E0EAE6;z-index:9999;display:none;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:24px;text-align:center;font-family:inherit}
+  .login-splash.show{display:flex;animation:splashFadeIn .2s ease-out}
+  @keyframes splashFadeIn{from{opacity:0}to{opacity:1}}
+  .login-splash-mark{font-family:'Cormorant Garamond',Georgia,serif;font-size:44px;font-weight:500;letter-spacing:-.02em;opacity:.9;margin:0}
+  .login-splash-text{font-size:15px;color:rgba(224,234,230,.7);margin:0;letter-spacing:.01em}
+  .login-splash-target{color:#c9a677;font-weight:500}
+  .login-splash-spinner{width:40px;height:40px;border-radius:50%;border:2.5px solid rgba(224,234,230,.15);border-top-color:#4D6E69;animation:splashSpin .9s linear infinite}
+  @keyframes splashSpin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -233,6 +243,14 @@
     </div>
   </aside>
 </main>
+
+<!-- Splash de transición al dashboard destino -->
+<div class="login-splash" id="loginSplash" aria-hidden="true">
+  <div class="login-splash-spinner"></div>
+  <h2 class="login-splash-mark">Capitia</h2>
+  <p class="login-splash-text">Abriendo <span class="login-splash-target" id="loginSplashTarget">tu dashboard</span>…</p>
+</div>
+
 <script>
 (function () {
   var AUTH_BASE = 'https://dashboard-capitia.vercel.app';
@@ -247,6 +265,20 @@
   var back = document.getElementById('loginBack');
   var help = document.getElementById('loginHelp');
   var foot = document.getElementById('loginFoot');
+  var splash = document.getElementById('loginSplash');
+  var splashTarget = document.getElementById('loginSplashTarget');
+
+  /**
+   * Muestra el splash "Abriendo <label>..." y hace el redirect al exchange.
+   * Un pequeño delay (350ms) da tiempo a que el splash pinte antes de que
+   * el navegador cambie de dominio.
+   */
+  function goToDashboard(url, label) {
+    splashTarget.textContent = label || 'tu dashboard';
+    splash.classList.add('show');
+    splash.setAttribute('aria-hidden', 'false');
+    setTimeout(function () { window.location.href = url; }, 350);
+  }
 
   function showError(msg) {
     errBox.textContent = msg;
@@ -267,16 +299,25 @@
     });
   }
   function renderCards(list, token) {
-    cards.innerHTML = list.map(function (d) {
+    cards.innerHTML = list.map(function (d, i) {
       var sub = d.linkLabel ? '<div class="login-card-sub">' + escapeHtml(d.linkLabel) + '</div>' : '';
       return (
-        '<a class="login-card" href="' + exchangeUrl(token, d) + '">'
+        '<a class="login-card" href="' + exchangeUrl(token, d) + '" data-idx="' + i + '">'
         + '<div class="login-card-title">' + escapeHtml(d.clientName) + '</div>'
         + sub
         + '<span class="login-card-arrow">→</span>'
         + '</a>'
       );
     }).join('');
+    // Interceptar clicks para mostrar splash antes del redirect
+    cards.querySelectorAll('.login-card').forEach(function (a) {
+      a.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        var d = list[Number(a.dataset.idx)];
+        var label = d.clientName + (d.linkLabel ? ' · ' + d.linkLabel : '');
+        goToDashboard(a.getAttribute('href'), label);
+      });
+    });
   }
   function showSelector(list, token) {
     form.style.display = 'none';
@@ -324,8 +365,10 @@
       var list = j.dashboards || [];
       var token = j.exchangeToken;
       if (list.length === 1) {
-        // Skip selector: redirect directo al único dashboard disponible.
-        window.location.href = exchangeUrl(token, list[0]);
+        // Skip selector: splash + redirect directo al único dashboard disponible.
+        var only = list[0];
+        var label = only.clientName + (only.linkLabel ? ' · ' + only.linkLabel : '');
+        goToDashboard(exchangeUrl(token, only), label);
         return;
       }
       showSelector(list, token);
