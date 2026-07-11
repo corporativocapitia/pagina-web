@@ -144,8 +144,8 @@
   .login-back:hover{color:#0F222A}
 
   /* ===== Splash de transición al dashboard (estilo capitia.mx: minimal ink dark) ===== */
-  .login-splash{position:fixed;inset:0;background:#0f1225;color:#f1ede4;z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:24px;text-align:center;font-family:inherit;overflow:hidden;-webkit-font-smoothing:antialiased}
-  .login-splash.show{display:flex;animation:splashFadeIn .3s ease-out}
+  .login-splash{position:fixed;inset:0;z-index:9999;display:none;overflow:hidden;background:radial-gradient(135% 105% at 50% 44%, #17213f 0%, #101634 44%, #0a0d1e 100%)}.lsx-field{position:absolute;inset:0}.lsx-hex{position:absolute;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:linear-gradient(135deg, rgba(77,110,105,.85), rgba(169,199,195,.92));opacity:.06;animation:lsxPulse var(--per) ease-in-out infinite;animation-delay:var(--delay)}@keyframes lsxPulse{0%,100%{opacity:.05;transform:scale(.92) rotate(0deg)}45%{opacity:.72;transform:scale(1.02) rotate(60deg)}}.lsx-spot{position:absolute;width:360px;height:360px;left:0;top:0;margin:-180px 0 0 -180px;border-radius:50%;pointer-events:none;mix-blend-mode:screen;transition:opacity .3s ease;opacity:0;background:radial-gradient(circle, rgba(169,199,195,.42) 0%, rgba(77,110,105,.14) 38%, transparent 66%)}.lsx-vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 47%, #0c0f24 0%, rgba(12,15,36,.92) 16%, rgba(12,15,36,.55) 30%, transparent 52%)}.lsx-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;pointer-events:none}.lsx-logo{width:210px;height:auto;opacity:.96;filter:brightness(0) invert(1) drop-shadow(0 6px 26px rgba(8,57,51,.6));animation:lsxBreath 3.4s ease-in-out infinite}@keyframes lsxBreath{0%,100%{opacity:.9;transform:translateY(0)}50%{opacity:1;transform:translateY(-2px)}}.lsx-bar{width:150px;height:3px;border-radius:3px;background:rgba(224,234,230,.10);overflow:hidden;position:relative}.lsx-bar::before{content:"";position:absolute;top:0;left:0;height:100%;width:38%;border-radius:3px;background:linear-gradient(90deg,transparent,#4D6E69,#A9CCC3,#E0EAE6,transparent);animation:lsxSweep 1.4s ease-in-out infinite}@keyframes lsxSweep{0%{transform:translateX(-130%)}100%{transform:translateX(380%)}}@media(prefers-reduced-motion:reduce){.lsx-hex,.lsx-logo,.lsx-bar::before{animation:none!important}}
+  .login-splash.show{display:block;animation:splashFadeIn .3s ease-out}
   @keyframes splashFadeIn{from{opacity:0}to{opacity:1}}
   .login-splash-ring{width:54px;height:54px;animation:splashSpin 1.2s linear infinite}
   .login-splash-ring circle{fill:none;stroke-width:1.6;stroke-linecap:round}
@@ -249,13 +249,7 @@
 </main>
 
 <!-- Splash de transición al dashboard destino (estilo capitia.mx: minimal ink dark) -->
-<div class="login-splash" id="loginSplash" role="status" aria-live="polite">
-  <svg class="login-splash-ring" viewBox="0 0 60 60" aria-hidden="true">
-    <circle class="track" cx="30" cy="30" r="26"/>
-    <circle class="arc" cx="30" cy="30" r="26"/>
-  </svg>
-  <p class="login-splash-text">Abriendo <em class="login-splash-target" id="loginSplashTarget">tu dashboard</em></p>
-</div>
+<div class="login-splash" id="loginSplash" role="status" aria-live="polite" aria-label="Abriendo tu dashboard"><div class="lsx-field" id="lsxField"></div><div class="lsx-spot" id="lsxSpot"></div><div class="lsx-vignette"></div><div class="lsx-center"><img class="lsx-logo" src="../img/logo.webp" alt="Capitia"><div class="lsx-bar"></div></div></div>
 
 <script>
 (function () {
@@ -273,6 +267,7 @@
   var foot = document.getElementById('loginFoot');
   var splash = document.getElementById('loginSplash');
   var splashTarget = document.getElementById('loginSplashTarget');
+  (function buildLsx(){var field=document.getElementById('lsxField'),spot=document.getElementById('lsxSpot'),sp=document.getElementById('loginSplash');if(!field)return;function build(){field.innerHTML='';var W=window.innerWidth<560?54:78,H=W*1.1547,gap=6,hexW=W-gap,hexH=H-gap,vStep=H*0.75;var cols=Math.ceil(window.innerWidth/W)+2,rows=Math.ceil(window.innerHeight/vStep)+2;var cx=window.innerWidth/2,cy=window.innerHeight/2,maxD=Math.sqrt(cx*cx+cy*cy);var frag=document.createDocumentFragment();for(var r=0;r<rows;r++){for(var c=0;c<cols;c++){var x=c*W+(r%2?W/2:0)-W/2,y=r*vStep-H/2;var d=Math.sqrt(Math.pow(x+W/2-cx,2)+Math.pow(y+H/2-cy,2));var el=document.createElement('span');el.className='lsx-hex';el.style.left=x+'px';el.style.top=y+'px';el.style.width=hexW+'px';el.style.height=hexH+'px';el.style.setProperty('--delay',(-(d)*2.0).toFixed(0)+'ms');el.style.setProperty('--per',(2600+(d/maxD)*400).toFixed(0)+'ms');frag.appendChild(el);}}field.appendChild(frag);}build();var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(build,200);});sp.addEventListener('pointermove',function(e){spot.style.opacity='1';spot.style.transform='translate('+e.clientX+'px,'+e.clientY+'px)';});sp.addEventListener('pointerleave',function(){spot.style.opacity='0';});})();
 
   /**
    * Muestra el splash "Abriendo <label>..." y hace el redirect al exchange.
@@ -280,7 +275,6 @@
    * el navegador cambie de dominio.
    */
   function goToDashboard(url, label) {
-    splashTarget.textContent = label || 'tu dashboard';
     splash.classList.add('show');
     splash.setAttribute('aria-hidden', 'false');
     setTimeout(function () { window.location.href = url; }, 350);
