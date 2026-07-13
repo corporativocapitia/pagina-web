@@ -139,7 +139,7 @@
   .login-card-sub{font-size:13px;color:#4D6E69;margin-top:2px}
   .login-card-role{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:rgba(21,22,44,.55);margin-top:6px}
   .login-card-arrow{position:absolute;top:50%;right:18px;transform:translateY(-50%);font-size:18px;color:rgba(21,22,44,.5);transition:transform .2s,color .2s}
-  .login-card:hover .login-card-arrow{color:#0F222A;transform:translateY(-50%) translateX(3px)}
+  .login-card:hover .login-card-arrow{color:#0F222A;transform:translateY(-50%) translateX(3px)}.login-cards.is-loading .login-card{pointer-events:none}.login-cards.is-loading .login-card:not(.loading){opacity:.45}.login-card.loading .login-card-arrow{display:none}.login-card.loading::after{content:"";position:absolute;top:50%;right:18px;transform:translateY(-50%) rotate(0);width:16px;height:16px;border-radius:50%;box-sizing:border-box;border:2px solid rgba(21,22,44,.18);border-top-color:#0F222A;animation:cardSpin .7s linear infinite}@keyframes cardSpin{from{transform:translateY(-50%) rotate(0)}to{transform:translateY(-50%) rotate(360deg)}}
   .login-back{background:none;border:0;font:inherit;font-size:13px;color:rgba(21,22,44,.6);padding:8px 0;cursor:pointer;text-align:left}
   .login-back:hover{color:#0F222A}
 
@@ -311,9 +311,12 @@
     cards.querySelectorAll('.login-card').forEach(function (a) {
       a.addEventListener('click', function (ev) {
         ev.preventDefault();
+        if (cards.classList.contains('is-loading')) return;
+        cards.classList.add('is-loading');
+        a.classList.add('loading');
         var d = list[Number(a.dataset.idx)];
         var label = d.clientName + (d.linkLabel ? ' · ' + d.linkLabel : '');
-        goToDashboard(a.getAttribute('href'), label);
+        setTimeout(function () { goToDashboard(a.getAttribute('href'), label); }, 90);
       });
     });
   }
