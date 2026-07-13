@@ -275,11 +275,7 @@
    * el navegador cambie de dominio.
    */
   function goToDashboard(url, label) {
-    splash.classList.add('show');
-    splash.classList.add('handoff');
-    document.documentElement.style.background = '#0a0d1e';
-    document.body.style.background = '#0a0d1e';
-    setTimeout(function () { window.location.href = url; }, 80);
+    window.location.href = url;
   }
 
   function showError(msg) {
